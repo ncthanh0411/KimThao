@@ -1,10 +1,11 @@
 import { BienNhan, ThongKeTongQuan, BienNhanFilter, TrangThaiBienNhan } from '../types';
+import { HOST } from './config';
+import { authService } from './authService';
 
 // =============================================================================
 // CẤU HÌNH API
 // =============================================================================
 const USE_MOCK_DATA = false; // Đã tắt Mock Data để gọi API thật
-const HOST = 'https://kimthao-service.azurewebsites.net';
 
 // Cấu trúc trả về mới của API (khớp với Backend Node.js)
 interface PaginatedResponse<T> {
@@ -14,6 +15,16 @@ interface PaginatedResponse<T> {
     limit: number;
     total: number;
   };
+}
+
+// Interface cho response của API Summary
+interface SummaryResponse {
+  tongGiaoDich: number;
+  soKhachCam: number;
+  soKhachChuoc: number;
+  tongTienCam: number;
+  tongTienChuoc: number;
+  tongTienLai: number;
 }
 
 // =============================================================================
@@ -54,11 +65,14 @@ const generateMockData = (count: number): BienNhan[] => {
     dienThoai: `0909${String(i).padStart(6, '0')}`,
     diaChi: `Gò Vấp, TP.HCM - Số nhà ${i}`,
     
-    tenLoaiGiaoDich: i % 5 === 0 ? 'Thêm tiền' : (i % 10 === 0 ? 'Chuộc đồ' : 'Cầm đồ'),
+    maLoaiGiaoDich: i % 10 === 0 ? 'CHD' : 'CD', // CHD = Chuộc, CD = Cầm Đồ
+    tenLoaiGiaoDich: i % 10 === 0 ? 'Chuộc đồ' : 'Cầm đồ',
     ngayGiaoDich: new Date(2024, 0, 1 + (i % 365)).toISOString(),
     
-    moTa: `01 Dây chuyền vàng 18K - Mẫu ${i}F00`,
+    // Tạo mô tả có dấu "+" để test tính năng tách dòng
+    moTa: `01 Dây chuyền vàng 18K + 01 Mặt dây chuyền hình phật + TL: 3 chỉ 5 phân + Hột: Không`,
     loaiHang: 'Vàng 18K',
+    soLuong: 1 + (i % 3),
     
     tienGoc: (i + 1) * 1000000,
     tienPhatSinh: i % 4 === 0 ? 50000 : 0,
@@ -70,7 +84,7 @@ const generateMockData = (count: number): BienNhan[] => {
     ngayCam: new Date(2023, 11, 1 + (i % 28)).toISOString(),
     ngayHetHan: new Date(2024, 2, 1 + (i % 28)).toISOString(),
     
-    triGiaTaiSan: (i + 1) * 1500000,
+    giaTriMonHang: (i + 1) * 1500000, 
     trangThai: i % 10 === 0 ? TrangThaiBienNhan.DA_CHUOC : TrangThaiBienNhan.DANG_CAM,
     nhanVien: 'NV Thu Ngân'
   }));
@@ -104,13 +118,20 @@ export const pawnService = {
 
         const response = await fetch(url.toString(), {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json' }
+            headers: authService.getAuthHeaders() // Tự động thêm Token vào Header
         });
+
+        // Xử lý khi Token hết hạn
+        if (response.status === 401 || response.status === 403) {
+           authService.logout();
+           throw new Error("Phiên đăng nhập hết hạn");
+        }
 
         if (!response.ok) throw new Error(`API error: ${response.status}`);
         return await response.json(); 
       } catch (error) {
-        console.error("Error fetching Real API:", error);
+        console.error("Error fetching Real API List:", error);
+        // Trả về rỗng thay vì fallback mock để tránh nhầm lẫn khi đang debug API thật
         return { data: [], pagination: { page, limit, total: 0 } };
       }
     }
@@ -164,6 +185,55 @@ export const pawnService = {
         limit: limit,
         total: totalRows
       }
+    };
+  },
+
+  // API Mới: Lấy tổng hợp thống kê theo khoảng thời gian
+  getThongKeSummary: async (fromDate: string, toDate: string): Promise<ThongKeTongQuan> => {
+    // 1. Thử gọi API thật trước
+    if (!USE_MOCK_DATA) {
+        try {
+            const url = new URL(`${HOST}/api/thong-ke/summary`);
+            if (fromDate) url.searchParams.append('fromDate', fromDate);
+            if (toDate) url.searchParams.append('toDate', toDate);
+
+            const response = await fetch(url.toString(), {
+                method: 'GET',
+                headers: authService.getAuthHeaders() // Tự động thêm Token vào Header
+            });
+
+            if (response.status === 401 || response.status === 403) {
+               authService.logout();
+               throw new Error("Phiên đăng nhập hết hạn");
+            }
+
+            if (response.ok) {
+                const data: SummaryResponse = await response.json();
+                return {
+                    soGiaoDich: data.tongGiaoDich,
+                    soKhachHangCam: data.soKhachCam,
+                    soKhachHangChuoc: data.soKhachChuoc,
+                    tongTienCam: data.tongTienCam,
+                    tongTienChuoc: data.tongTienChuoc,
+                    tongTienLai: data.tongTienLai
+                };
+            }
+            
+            console.warn(`API Summary returned ${response.status}. Falling back to mock data.`);
+        } catch (error) {
+            console.warn("Error fetching Summary API (Network/CORS). Falling back to mock data.", error);
+        }
+    }
+
+    // 2. Fallback Mock Data (Dữ liệu giả lập khi API lỗi)
+    await delay(300);
+    return {
+        soGiaoDich: 31,
+        soKhachHangCam: 26,
+        soKhachHangChuoc: 5,
+        tongTienCam: 178600000,
+        tongTienChuoc: 33500000,
+        tongTienLai: 947666
     };
   },
 

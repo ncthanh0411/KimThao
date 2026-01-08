@@ -4,17 +4,28 @@ import MainLayout from './layouts/MainLayout';
 import DashboardPage from './pages/DashboardPage';
 import DanhSachBienNhanPage from './pages/DanhSachBienNhanPage';
 import ThongKePage from './pages/ThongKePage';
+import LoginPage from './pages/auth/LoginPage';
+import PrivateRoute from './components/PrivateRoute';
 
 const App: React.FC = () => {
   return (
     <HashRouter>
       <Routes>
-        <Route path="/" element={<MainLayout />}>
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard" element={<DashboardPage />} />
-          <Route path="bien-nhan" element={<DanhSachBienNhanPage />} />
-          <Route path="thong-ke" element={<ThongKePage />} />
+        {/* Public Route: Login */}
+        <Route path="/login" element={<LoginPage />} />
+
+        {/* Protected Routes: Yêu cầu đăng nhập */}
+        <Route element={<PrivateRoute />}>
+          <Route path="/" element={<MainLayout />}>
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="dashboard" element={<DashboardPage />} />
+            <Route path="bien-nhan" element={<DanhSachBienNhanPage />} />
+            <Route path="thong-ke" element={<ThongKePage />} />
+          </Route>
         </Route>
+
+        {/* Fallback cho các route không xác định */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </HashRouter>
   );

@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, FileText, PieChart, Gem, X, PanelLeftClose } from 'lucide-react';
+import { LayoutDashboard, FileText, PieChart, Gem, X, PanelLeftClose, LogOut } from 'lucide-react';
+import { authService } from '../api/authService';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -8,11 +9,19 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
+  const user = authService.getUser();
+
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
     { name: 'DS Biên Nhận', path: '/bien-nhan', icon: <FileText size={20} /> },
     { name: 'Thống Kê', path: '/thong-ke', icon: <PieChart size={20} /> },
   ];
+
+  const handleLogout = () => {
+    if (window.confirm('Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?')) {
+      authService.logout();
+    }
+  };
 
   return (
     <>
@@ -27,7 +36,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             <Gem className="text-gold-500 mr-2" size={28} />
             <div>
               <h1 className="font-bold text-lg leading-tight text-gold-600">Kim Thảo</h1>
-              <p className="text-xs text-gray-500">Hệ thống cầm đồ</p>
+              <p className="text-xs text-gray-500">Pawn System</p>
             </div>
           </div>
           
@@ -68,14 +77,26 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         </nav>
 
         <div className="p-4 border-t border-gray-100 bg-gray-50/50 shrink-0">
-          <div className="flex items-center">
-            <div className="w-8 h-8 rounded-full bg-gold-100 flex items-center justify-center text-gold-700 font-bold text-xs border border-gold-200">
-              A
+          <div className="flex items-center justify-between">
+            <div className="flex items-center min-w-0">
+              <div className="w-9 h-9 rounded-full bg-gold-100 flex items-center justify-center text-gold-700 font-bold text-sm border border-gold-200 shrink-0">
+                {user?.fullName ? user.fullName.charAt(0).toUpperCase() : 'A'}
+              </div>
+              <div className="ml-3 truncate">
+                <p className="text-sm font-medium text-gray-800 truncate" title={user?.fullName}>
+                  {user?.fullName || 'Admin'}
+                </p>
+                <p className="text-xs text-gray-500 truncate">{user?.role || 'Quản lý'}</p>
+              </div>
             </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-800">Admin</p>
-              <p className="text-xs text-gray-500">Quản lý cửa hàng</p>
-            </div>
+            
+            <button 
+              onClick={handleLogout}
+              className="ml-2 p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors shrink-0"
+              title="Đăng xuất"
+            >
+              <LogOut size={20} />
+            </button>
           </div>
         </div>
       </aside>

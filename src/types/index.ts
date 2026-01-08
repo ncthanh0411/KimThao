@@ -10,17 +10,24 @@ export enum TrangThaiBienNhan {
 export interface BienNhan {
   maBienNhan: string;     // Updated from maBN
   tenKhachHang: string;   // Updated from khachHang
+  
+  maLoaiGiaoDich: string; // New: Mã loại giao dịch (CHD = Chuộc)
   tenLoaiGiaoDich: string; // Updated from loaiGiaoDich
+  
   ngayGiaoDich: string;   // Ngày giao dịch (ISO String)
-  moTa: string;           // Mô tả
+  moTa: string;           // Mô tả (Chuỗi phân cách bởi dấu +)
+  soLuong: number;        // New: Số lượng món hàng
+  
   tienGoc: number;        // Tiền gốc
   tienPhatSinh: number;   // Tiền phát sinh
   tienLai: number;        // Tiền lãi
   tienGiam: number;       // Tiền giảm
   tienGiaoDich: number;   // Updated from daThanhToan
+  
   soNgayCam: number;      // Số ngày cầm
   ngayCam: string;        // Ngày cầm (ISO String)
-  triGiaTaiSan: number;   // Trị Giá
+  
+  giaTriMonHang: number;  // Updated from triGiaTaiSan
   diaChi: string;         // Địa chỉ
   dienThoai: string;      // Điện thoại
   cmnd: string;           // CMND

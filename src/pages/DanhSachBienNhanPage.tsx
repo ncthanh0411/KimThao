@@ -7,23 +7,22 @@ import { BienNhan, BienNhanFilter } from '../types';
 import { formatCurrency, formatDateShort, formatDate } from '../utils/format';
 import DetailModal from '../components/DetailModal';
 
-// Định nghĩa độ rộng cột ra ngoài để không bị tạo lại mỗi lần render
+// Định nghĩa độ rộng cột (Đã ẩn Địa chỉ và Trị giá, thêm Số lượng)
 const COLUMN_WIDTHS = {
     maBN: 'w-[120px]',
     khachHang: 'w-[180px]',
     cmnd: 'w-[120px]',
     sdt: 'w-[120px]',
-    diaChi: 'w-[200px]',
     giaoDich: 'w-[120px]',
     ngayGD: 'w-[140px]',
+    ngayCam: 'w-[140px]', // Moved next to ngayGD
+    soLuong: 'w-[80px]',  // New
     moTa: 'w-[200px]',
-    triGia: 'w-[120px]',
     tienGoc: 'w-[120px]',
     phatSinh: 'w-[120px]',
     tienLai: 'w-[120px]',
     tienGD: 'w-[120px]',
     soNgay: 'w-[80px]',
-    ngayCam: 'w-[120px]',
 };
 
 // --- Tách Component Table ---
@@ -74,17 +73,16 @@ const VirtualTable = memo(({
                           <th className={`${COLUMN_WIDTHS.khachHang} px-4 py-3 border-b border-gray-200`}>Khách hàng</th>
                           <th className={`${COLUMN_WIDTHS.cmnd} px-4 py-3 border-b border-gray-200`}>CMND</th>
                           <th className={`${COLUMN_WIDTHS.sdt} px-4 py-3 border-b border-gray-200`}>Điện thoại</th>
-                          <th className={`${COLUMN_WIDTHS.diaChi} px-4 py-3 border-b border-gray-200`}>Địa chỉ</th>
                           <th className={`${COLUMN_WIDTHS.giaoDich} px-4 py-3 border-b border-gray-200`}>Giao dịch</th>
+                          <th className={`${COLUMN_WIDTHS.ngayCam} px-4 py-3 border-b border-gray-200`}>Ngày cầm</th>
                           <th className={`${COLUMN_WIDTHS.ngayGD} px-4 py-3 border-b border-gray-200`}>Ngày GD</th>
+                          <th className={`${COLUMN_WIDTHS.soLuong} px-4 py-3 text-center border-b border-gray-200`}>SL</th>
                           <th className={`${COLUMN_WIDTHS.moTa} px-4 py-3 border-b border-gray-200`}>Mô tả</th>
-                          <th className={`${COLUMN_WIDTHS.triGia} px-4 py-3 text-right border-b border-gray-200`}>Trị Giá</th>
                           <th className={`${COLUMN_WIDTHS.tienGoc} px-4 py-3 text-right border-b border-gray-200`}>Tiền gốc</th>
                           <th className={`${COLUMN_WIDTHS.phatSinh} px-4 py-3 text-right border-b border-gray-200`}>Phát sinh</th>
                           <th className={`${COLUMN_WIDTHS.tienLai} px-4 py-3 text-right border-b border-gray-200`}>Tiền lãi</th>
                           <th className={`${COLUMN_WIDTHS.tienGD} px-4 py-3 text-right border-b border-gray-200`}>Tiền GD</th>
                           <th className={`${COLUMN_WIDTHS.soNgay} px-4 py-3 text-center border-b border-gray-200`}>Ngày</th>
-                          <th className={`${COLUMN_WIDTHS.ngayCam} px-4 py-3 border-b border-gray-200`}>Ngày cầm</th>
                       </tr>
                   </thead>
                </table>
@@ -118,24 +116,26 @@ const VirtualTable = memo(({
                                   <th className={COLUMN_WIDTHS.khachHang}></th>
                                   <th className={COLUMN_WIDTHS.cmnd}></th>
                                   <th className={COLUMN_WIDTHS.sdt}></th>
-                                  <th className={COLUMN_WIDTHS.diaChi}></th>
                                   <th className={COLUMN_WIDTHS.giaoDich}></th>
+                                  <th className={COLUMN_WIDTHS.ngayCam}></th>
                                   <th className={COLUMN_WIDTHS.ngayGD}></th>
+                                  <th className={COLUMN_WIDTHS.soLuong}></th>
                                   <th className={COLUMN_WIDTHS.moTa}></th>
-                                  <th className={COLUMN_WIDTHS.triGia}></th>
                                   <th className={COLUMN_WIDTHS.tienGoc}></th>
                                   <th className={COLUMN_WIDTHS.phatSinh}></th>
                                   <th className={COLUMN_WIDTHS.tienLai}></th>
                                   <th className={COLUMN_WIDTHS.tienGD}></th>
                                   <th className={COLUMN_WIDTHS.soNgay}></th>
-                                  <th className={COLUMN_WIDTHS.ngayCam}></th>
                                </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                {rowVirtualizer.getVirtualItems().map((virtualRow) => {
                                  const item = flatData[virtualRow.index];
                                  if (!item) return null;
-    
+                                 
+                                 // Logic xác định màu sắc dựa trên mã loại giao dịch (CHD = Chuộc)
+                                 const isDaChuoc = item.maLoaiGiaoDich === 'CHD';
+
                                  return (
                                     <tr 
                                         key={item.maBienNhan} 
@@ -146,19 +146,19 @@ const VirtualTable = memo(({
                                         <td className="px-4 py-3 font-medium text-gray-900 truncate" title={item.tenKhachHang}>{item.tenKhachHang}</td>
                                         <td className="px-4 py-3 text-gray-600 truncate">{item.cmnd}</td>
                                         <td className="px-4 py-3 text-gray-600 truncate">{item.dienThoai}</td>
-                                        <td className="px-4 py-3 text-gray-500 truncate" title={item.diaChi}>{item.diaChi}</td>
                                         <td className="px-4 py-3">
                                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
-                                                item.tenLoaiGiaoDich === 'Chuộc đồ'
+                                                isDaChuoc
                                                     ? 'bg-green-100 text-green-700 border-green-200'
                                                     : 'bg-red-100 text-red-700 border-red-200'
                                             }`}>
                                                 {item.tenLoaiGiaoDich}
                                             </span>
                                         </td>
+                                        <td className="px-4 py-3 text-gray-600">{formatDateShort(item.ngayCam)}</td>
                                         <td className="px-4 py-3 text-gray-600">{formatDate(item.ngayGiaoDich)}</td>
+                                        <td className="px-4 py-3 text-center text-gray-700 font-medium">{item.soLuong}</td>
                                         <td className="px-4 py-3 max-w-[12rem] truncate text-gray-500" title={item.moTa}>{item.moTa}</td>
-                                        <td className="px-4 py-3 text-right text-gray-900">{formatCurrency(item.triGiaTaiSan)}</td>
                                         <td className="px-4 py-3 text-right font-medium text-gray-900">{formatCurrency(item.tienGoc)}</td>
                                         <td className="px-4 py-3 text-right text-gray-500">{formatCurrency(item.tienPhatSinh)}</td>
                                         <td className="px-4 py-3 text-right text-orange-600 font-medium">{formatCurrency(item.tienLai)}</td>
@@ -166,7 +166,6 @@ const VirtualTable = memo(({
                                         <td className="px-4 py-3 text-center">
                                             <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-xs font-medium">{item.soNgayCam}</span>
                                         </td>
-                                        <td className="px-4 py-3 text-gray-600">{formatDateShort(item.ngayCam)}</td>
                                     </tr>
                                  );
                                })}
