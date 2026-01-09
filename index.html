@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tiệm Vàng Kim Thảo Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+            colors: {
+              primary: {
+                50: '#f0f9ff',
+                100: '#e0f2fe',
+                500: '#0ea5e9', // Sky blue for clean enterprise look
+                600: '#0284c7',
+                700: '#0369a1',
+                900: '#0c4a6e',
+              },
+              gold: {
+                400: '#fbbf24',
+                500: '#f59e0b', // Gold color for branding
+                600: '#d97706',
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      /* Tùy chỉnh Scrollbar toàn cục */
+      .custom-scrollbar {
+        scrollbar-width: thin; /* Firefox */
+        scrollbar-color: #cbd5e1 transparent; /* Firefox */
+      }
+
+      /* Chrome, Edge, and Safari */
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+        border-radius: 4px;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1; /* Màu xám nhẹ (Slate 300) */
+        border-radius: 4px;
+        border: 1px solid transparent; /* Tạo khoảng cách nếu cần */
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background-color: #94a3b8; /* Màu xám đậm hơn khi hover (Slate 400) */
+      }
+      
+      /* Cố định cột đầu tiên khi scroll ngang (Sticky Column Shadow) */
+      .sticky-left-shadow::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(to right, rgba(0,0,0,0.05), transparent);
+        pointer-events: none;
+      }
+    </style>
+  <script type="module" crossorigin src="/assets/index-Dvewse-e.js"></script>
+</head>
+  <body class="bg-gray-50 text-slate-800 antialiased">
+    <div id="root"></div>
+  </body>
+</html>
