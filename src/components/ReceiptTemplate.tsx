@@ -9,22 +9,27 @@ interface ReceiptTemplateProps {
 }
 
 export const ReceiptTemplate: React.FC<ReceiptTemplateProps> = ({ data }) => {
-  // Lấy ngày hiện tại cho phần "Ngày... tháng... năm..."
+  // Lấy ngày hiện tại
   const today = new Date();
   const day = today.getDate().toString().padStart(2, '0');
   const month = (today.getMonth() + 1).toString().padStart(2, '0');
   const year = today.getFullYear();
 
-  // Định dạng số tiền
   const moneyInWords = readMoney(data.tienGoc);
 
-  // Style cho phần in
-  // Chúng ta sử dụng CSS in-line và class Tailwind để tạo bố cục
   return (
-    <div id="receipt-print-area" className="hidden print:block bg-white text-black p-8 font-sans text-sm leading-relaxed max-w-[210mm] mx-auto">
+    <div id="receipt-print-area" className="hidden print:block bg-white text-black font-sans text-[13px] leading-snug mx-auto">
       <style>
         {`
           @media print {
+            @page {
+              size: 148mm 210mm; /* Khổ A5 hoặc tùy chỉnh gần với 20cm */
+              margin: 0mm; 
+            }
+            body {
+              margin: 0;
+              padding: 0;
+            }
             body * {
               visibility: hidden;
             }
@@ -37,131 +42,156 @@ export const ReceiptTemplate: React.FC<ReceiptTemplateProps> = ({ data }) => {
               top: 0;
               width: 100%;
               height: 100%;
-              margin: 0;
-              padding: 20px;
-              background: white;
             }
           }
         `}
       </style>
 
-      {/* --- PHẦN TRÊN (GIAO CHO KHÁCH) --- */}
-      <div className="mb-8">
-        {/* Header: Thông tin khách & Barcode */}
-        <div className="flex justify-between items-start mb-6">
-          <div className="flex-1 space-y-1.5">
-            <div className="flex">
-              <span className="font-bold w-24">Khách hàng:</span>
-              <span className="font-bold text-lg">{data.tenKhachHang}</span>
-            </div>
-            <div className="flex">
-               <span className="font-bold w-24">Địa chỉ:</span>
-               <span>{data.diaChi}</span>
-            </div>
-            <div className="flex">
-               <span className="font-bold w-24">Số CCCD:</span>
-               <span className="font-bold">{data.cmnd}</span>
-               <span className="ml-8 font-bold">Số điện thoại: {data.dienThoai}</span>
-            </div>
-            <div className="flex">
-               <span className="font-bold w-24">Món hàng:</span>
-               <span className="font-bold uppercase">{data.moTa}</span>
-            </div>
-          </div>
+      {/* 
+        LOGIC CANH CHỈNH CHO GIẤY IN SẴN (PRE-PRINTED):
+        1. Top Padding (~35mm): Để chừa chỗ cho Header Tiệm Vàng in sẵn.
+        2. Content: Chỉ in chữ đen.
+        3. Bottom Padding: Căn chỉnh phần cuống.
+      */}
 
-          <div className="flex flex-col items-end">
-             <div className="text-right font-bold text-lg mb-1">{data.maBienNhan}</div>
-             <Barcode 
-                value={data.maBienNhan} 
-                width={1.5} 
-                height={40} 
-                fontSize={14} 
-                displayValue={false}
-                margin={0}
-             />
-          </div>
+      <div className="relative px-6 pt-[38mm]"> {/* Cách top 38mm để né Header in sẵn */}
+        
+        {/* MÃ VẠCH & SỐ BIÊN NHẬN (Góc phải trên cùng) */}
+        <div className="absolute top-[30mm] right-6 text-right">
+             <div className="font-bold text-sm mb-1">{data.maBienNhan}</div>
+             <div className="h-8 overflow-hidden flex justify-end">
+                <Barcode 
+                    value={data.maBienNhan} 
+                    width={1.2} 
+                    height={35} 
+                    fontSize={0} 
+                    displayValue={false}
+                    margin={0}
+                />
+             </div>
         </div>
 
-        {/* Body: Tài chính */}
-        <div className="space-y-1.5 mb-4">
+        {/* --- PHẦN THÂN TRÊN --- */}
+        <div className="space-y-1.5 mt-4">
+            <div className="flex">
+                <span className="font-bold w-[100px] shrink-0">Khách hàng:</span>
+                <span className="font-bold text-base">{data.tenKhachHang}</span>
+            </div>
+            
+            {/* Dòng Địa chỉ */}
+            <div className="flex">
+               <span className="font-bold w-[100px] shrink-0">Địa chỉ:</span>
+               <span className="truncate">{data.diaChi}</span>
+            </div>
+            
+            {/* Dòng CCCD & SĐT */}
+            <div className="flex items-center">
+               <span className="font-bold w-[100px] shrink-0">Số CCCD:</span>
+               <span className="font-bold w-[140px]">{data.cmnd}</span>
+               
+               <span className="font-bold mr-2">Số điện thoại:</span>
+               <span className="font-bold">{data.dienThoai}</span>
+            </div>
+            
+            {/* Dòng Món hàng */}
+            <div className="flex">
+               <span className="font-bold w-[100px] shrink-0">Món hàng:</span>
+               <span className="font-bold font-mono text-[13px]">{data.moTa}</span>
+            </div>
+        </div>
+
+        {/* Khoảng cách nhỏ */}
+        <div className="h-4"></div>
+
+        {/* THÔNG TIN TIỀN & NGÀY */}
+        <div className="space-y-1.5">
              <div className="flex items-baseline">
-               <span className="font-bold w-24">Tiền cầm:</span>
-               <span className="font-bold text-xl">{formatCurrency(data.tienGoc).replace('₫', '')}</span>
+               <span className="font-bold w-[100px] shrink-0">Tiền cầm:</span>
+               <span className="font-bold text-lg">{formatCurrency(data.tienGoc).replace('₫', '')}</span>
             </div>
             <div className="flex items-baseline">
-               <span className="font-bold w-24">Bằng chữ:</span>
+               <span className="font-bold w-[100px] shrink-0">Bằng chữ:</span>
                <span className="italic font-medium">{moneyInWords}</span>
             </div>
-            <div className="font-bold mt-2">
+            <div className="font-bold mt-1">
                 Thời gian vay kể từ ngày ..{formatDateShort(data.ngayCam)}.. Đến ngày ..{formatDateShort(data.ngayHetHan)}..
             </div>
         </div>
 
-        {/* Terms */}
-        <div className="text-sm mb-8 text-justify leading-snug">
+        {/* ĐIỀU KHOẢN (Chữ đen, đậm) */}
+        <div className="mt-2 text-[12px] leading-snug font-bold text-black text-justify">
            Lãi suất: 2% /tháng - Lãi ngày: 3% /tháng. Thời hạn cầm 3 tháng.
-           <br/>
            Khách hàng đồng ý quá 3 tháng không đóng lãi thì mất đồ.
         </div>
 
-        {/* Signatures */}
-        <div className="flex justify-between items-start mb-16">
-            <div className="text-center w-40">
-                <p className="font-bold mb-16">Khách hàng</p>
-                <p className="font-bold uppercase">{data.tenKhachHang}</p>
+        {/* CHỮ KÝ */}
+        <div className="flex justify-between items-start mt-4 px-2">
+            <div className="text-center w-32">
+                <p className="font-bold mb-8 text-[12px]">Khách hàng</p>
+                <p className="font-bold uppercase text-[12px]">{data.tenKhachHang}</p>
             </div>
-            <div className="text-center w-60">
-                <p className="italic mb-1">Tân Hòa ngày {day} tháng {month} năm {year}</p>
-                 {/* Khoảng trống để đóng dấu/ký tên chủ tiệm nếu cần */}
+            <div className="text-center w-48">
+                <p className="italic text-[11px] mb-1">Tân Hòa ngày {day} tháng {month} năm {year}</p>
+                <p className="font-bold text-red-600 text-[12px] uppercase hidden">CHỦ NHÂN</p> {/* Ẩn chữ Chủ Nhân vì giấy in có sẵn? Nếu giấy chưa có thì xóa class hidden */}
+                <p className="font-bold text-[12px] uppercase">CHỦ NHÂN</p>
             </div>
         </div>
       </div>
 
-      {/* --- ĐƯỜNG CẮT (DASHED LINE) --- */}
-      <div className="border-t-2 border-dashed border-gray-400 my-8 relative">
-         <span className="absolute left-1/2 -top-3 bg-white px-2 text-gray-500 text-xs italic">Cắt theo đường này</span>
-      </div>
+      {/* --- PHẦN CUỐNG LƯU (DƯỚI CÙNG) --- */}
+      {/* Sử dụng đường kẻ đứt nét nhẹ, bỏ chữ cắt */}
+      <div className="border-t border-dashed border-gray-400 mx-4 my-2"></div>
 
-      {/* --- PHẦN DƯỚI (CUỐNG LƯU) --- */}
-      <div className="pt-4">
-         <div className="flex justify-between items-start">
-             <div className="space-y-2 flex-1">
-                <div className="flex">
-                    <span className="font-bold w-24">Khách hàng:</span>
-                    <span className="font-bold">{data.tenKhachHang}</span>
-                </div>
-                 <div className="flex">
-                    <span className="font-bold w-24">Số ĐT:</span>
-                    <span>{data.dienThoai}</span>
-                </div>
-                 <div className="flex">
-                    <span className="font-bold w-24">Số CMND:</span>
-                    <span>{data.cmnd}</span>
-                </div>
-                 <div className="flex">
-                    <span className="font-bold w-24">Món hàng:</span>
-                    <span className="uppercase text-xs font-bold break-words max-w-[300px]">{data.moTa}</span>
-                </div>
-             </div>
+      {/* 
+         Margin left 24mm để né cái Logo KT đỏ in sẵn ở góc dưới trái 
+      */}
+      <div className="pl-[26mm] pr-4 text-[12px] relative">
+         
+         {/* Mã vạch nhỏ ở phần cuống (Góc phải) */}
+         <div className="absolute top-0 right-0 text-right">
+             <div className="font-bold text-[11px] mb-0.5">{data.maBienNhan}</div>
+             <Barcode 
+                 value={data.maBienNhan} 
+                 width={1} 
+                 height={25} 
+                 fontSize={0} 
+                 displayValue={false} 
+                 margin={0}
+            />
+         </div>
 
-             <div className="flex flex-col items-end space-y-2">
-                <div className="text-right font-bold text-lg">{data.maBienNhan}</div>
-                 <Barcode 
-                    value={data.maBienNhan} 
-                    width={1.2} 
-                    height={30} 
-                    fontSize={12} 
-                    displayValue={false}
-                    margin={0}
-                 />
-                <div className="text-right text-sm">
-                    <div>Tiền cầm: <span className="font-bold">{formatCurrency(data.tienGoc).replace('₫', '')}</span></div>
-                    <div>Ngày cầm: {formatDateShort(data.ngayCam)}</div>
-                    <div>Ngày đến hạn: {formatDateShort(data.ngayHetHan)}</div>
-                </div>
-             </div>
+         <div className="space-y-1 pt-1">
+            <div className="flex">
+                <span className="font-bold w-20 shrink-0">Khách hàng:</span>
+                <span className="font-bold">{data.tenKhachHang}</span>
+            </div>
+             <div className="flex">
+                <span className="font-bold w-20 shrink-0">Số ĐT:</span>
+                <span className="font-bold">{data.dienThoai}</span>
+            </div>
+            <div className="flex">
+                <span className="font-bold w-20 shrink-0">Số CMND:</span>
+                <span className="font-bold">{data.cmnd}</span>
+            </div>
+            <div className="flex">
+                <span className="font-bold w-20 shrink-0">Món hàng:</span>
+                <span className="truncate font-bold w-[60%]">{data.moTa}</span>
+            </div>
+            
+            <div className="flex mt-1">
+                 <div className="w-1/2">
+                    <span className="font-bold mr-1">Tiền cầm:</span>
+                    <span className="font-bold">{formatCurrency(data.tienGoc).replace('₫', '')}</span>
+                 </div>
+            </div>
+            
+            <div className="flex text-[11px] font-semibold mt-1">
+                <div className="mr-4">Ngày cầm: {formatDateShort(data.ngayCam)}</div>
+                <div>Ngày đến hạn: {formatDateShort(data.ngayHetHan)}</div>
+            </div>
          </div>
       </div>
+
     </div>
   );
 };
