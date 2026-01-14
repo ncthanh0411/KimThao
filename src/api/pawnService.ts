@@ -244,6 +244,45 @@ export const pawnService = {
   },
 
   getBienNhanDetail: async (maBN: string): Promise<BienNhan | undefined> => {
+    // 1. Call API Thật
+    if (!USE_MOCK_DATA) {
+        try {
+            // URL: /api/bien-nhan/{maBN}
+            const url = `${HOST}/api/bien-nhan/${maBN}`;
+            
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: authService.getAuthHeaders()
+            });
+
+            if (response.status === 401 || response.status === 403) {
+                authService.logout();
+                throw new Error("Phiên đăng nhập hết hạn");
+            }
+
+            if (!response.ok) {
+                if(response.status === 404) return undefined;
+                throw new Error("Lỗi khi tải chi tiết biên nhận");
+            }
+
+            const data = await response.json();
+            
+            // Map dữ liệu từ API về Interface của App
+            // Lưu ý: data.tienCam từ API sẽ map vào tienGoc của App
+            return {
+                ...data,
+                tienGoc: data.tienCam, // Map tienCam -> tienGoc
+                nhanVien: data.tenNguoiDung // Map tenNguoiDung -> nhanVien
+            };
+
+        } catch (error) {
+            console.error("Error fetching Receipt Detail:", error);
+            // Có thể throw error hoặc return undefined tùy logic xử lý ở view
+            return undefined;
+        }
+    }
+
+    // 2. Fallback Mock Data
     await delay(300);
     return FULL_MOCK_DB.find(item => item.maBienNhan === maBN);
   },

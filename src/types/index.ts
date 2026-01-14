@@ -1,3 +1,4 @@
+
 // Định nghĩa trạng thái biên nhận
 export enum TrangThaiBienNhan {
   DANG_CAM = 'DANG_CAM',
@@ -33,6 +34,8 @@ export interface BienNhan {
   cmnd: string;           // CMND
   
   // Các field phụ trợ
+  ngaySinh?: string;      // New: Ngày sinh khách hàng
+  ngayCap?: string;       // New: Ngày cấp CCCD
   loaiHang?: string;      
   ngayHetHan?: string;    
   trangThai?: TrangThaiBienNhan;

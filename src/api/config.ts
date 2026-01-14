@@ -1,2 +1,2 @@
-export const HOST = 'https://kimthao-service.azurewebsites.net';
-//export const HOST = 'http://localhost:3000';
+//export const HOST = 'https://kimthao-service.azurewebsites.net';
+export const HOST = 'http://localhost:3000';

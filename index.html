@@ -33,6 +33,27 @@
       }
     </script>
     <style>
+      /* --- LOGIC TỰ ĐỘNG ĐIỀU CHỈNH CỠ CHỮ THEO MÀN HÌNH --- */
+      
+      /* 1. Mặc định (Màn hình to, máy mới Full HD+): Giữ nguyên chuẩn 16px cho đẹp */
+      :root {
+        font-size: 16px;
+      }
+
+      /* 2. Laptop phổ thông (14-15.6 inch): Thu nhỏ nhẹ xuống 14px */
+      @media (max-width: 1600px) {
+        :root {
+          font-size: 14px;
+        }
+      }
+
+      /* 3. Máy cũ, màn hình nhỏ (1366x768 trở xuống): Thu nhỏ xuống 12px (Tương đương zoom 75%) */
+      @media (max-width: 1366px) {
+        :root {
+          font-size: 12px; 
+        }
+      }
+
       /* Tùy chỉnh Scrollbar toàn cục */
       .custom-scrollbar {
         scrollbar-width: thin; /* Firefox */
@@ -70,6 +91,16 @@
         width: 4px;
         background: linear-gradient(to right, rgba(0,0,0,0.05), transparent);
         pointer-events: none;
+      }
+
+      @media print {
+        @page {
+          size: auto;
+          margin: 0mm;
+        }
+        body {
+          background-color: white;
+        }
       }
     </style>
 </head>

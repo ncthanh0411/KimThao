@@ -6,6 +6,9 @@ import { pawnService } from '../api/pawnService';
 import { BienNhan, BienNhanFilter } from '../types';
 import { formatCurrency, formatDateShort, formatDate } from '../utils/format';
 
+// Key lưu session
+const THONG_KE_FILTERS_KEY = 'thong_ke_filters';
+
 // 1. Cấu hình cột hiển thị cho trang Thống Kê
 const COLUMN_WIDTHS = {
     maBN: 'w-[120px]',
@@ -170,9 +173,16 @@ const ThongKePage: React.FC = () => {
   const tuNgayRef = useRef<HTMLInputElement>(null);
   const denNgayRef = useRef<HTMLInputElement>(null);
 
-  const [activeFilters, setActiveFilters] = useState<BienNhanFilter>({
-    tuNgay: formatDateForInput(firstDayOfMonth),
-    denNgay: formatDateForInput(today)
+  // Khôi phục từ session storage
+  const [activeFilters, setActiveFilters] = useState<BienNhanFilter>(() => {
+    const saved = sessionStorage.getItem(THONG_KE_FILTERS_KEY);
+    if (saved) {
+        return JSON.parse(saved);
+    }
+    return {
+        tuNgay: formatDateForInput(firstDayOfMonth),
+        denNgay: formatDateForInput(today)
+    };
   });
   
   // Version để kích hoạt refetch
@@ -238,15 +248,19 @@ const ThongKePage: React.FC = () => {
 
   // --- Handlers ---
   const handleSearch = () => {
-    setActiveFilters({
+    const newFilters = {
       tuNgay: tuNgayRef.current?.value || '',
       denNgay: denNgayRef.current?.value || ''
-    });
+    };
+    // Lưu vào state và session
+    setActiveFilters(newFilters);
+    sessionStorage.setItem(THONG_KE_FILTERS_KEY, JSON.stringify(newFilters));
     setSearchVersion(v => v + 1);
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-6rem)] gap-4">
+    // Height adjusted because Header is removed
+    <div className="flex flex-col h-[calc(100vh-2rem)] gap-4">
       
       {/* 1. Header & Filter - ĐÃ CẬP NHẬT: ĐƯA VỀ BÊN TRÁI */}
       <div className="flex flex-col gap-3 shrink-0">

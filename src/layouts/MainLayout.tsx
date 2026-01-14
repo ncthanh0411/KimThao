@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
+import { Menu } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
-import Header from '../components/Header';
 
 const MainLayout: React.FC = () => {
   // Khởi tạo state dựa trên kích thước màn hình
@@ -47,10 +47,19 @@ const MainLayout: React.FC = () => {
           isSidebarOpen ? 'lg:ml-64' : 'lg:ml-0'
         }`}
       >
-        <Header onMenuToggle={toggleSidebar} />
+        {/* Nút mở menu chỉ hiện khi Sidebar bị đóng (thay thế cho Header cũ) */}
+        {!isSidebarOpen && (
+           <button 
+             onClick={toggleSidebar}
+             className="fixed top-4 left-4 z-40 p-2 bg-white text-gray-600 hover:text-primary-600 shadow-md rounded-lg border border-gray-200 transition-all"
+             title="Mở Menu"
+           >
+             <Menu size={20} />
+           </button>
+        )}
         
-        {/* Main Content Area */}
-        <main className="flex-1 p-4 sm:p-6 w-full max-w-[100vw]">
+        {/* Main Content Area - Bỏ Header, tối ưu padding */}
+        <main className="flex-1 p-3 sm:p-4 w-full max-w-[100vw]">
           <Outlet />
         </main>
       </div>

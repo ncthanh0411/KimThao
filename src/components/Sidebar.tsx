@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, FileText, PieChart, Gem, X, PanelLeftClose, LogOut } from 'lucide-react';
+import { LayoutDashboard, FileText, PieChart, Gem, X, PanelLeftClose, LogOut, PlusCircle, Search, Settings } from 'lucide-react';
 import { authService } from '../api/authService';
 
 interface SidebarProps {
@@ -13,7 +13,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
-    { name: 'DS Biên Nhận', path: '/bien-nhan', icon: <FileText size={20} /> },
+    { name: 'Danh Sách Biên Nhận', path: '/bien-nhan', icon: <FileText size={20} /> },
+    { name: 'Lập Biên Nhận', path: '/create-receipt', icon: <PlusCircle size={20} /> },
+    { name: 'Quản Lý Biên Nhận', path: '/manage-receipt', icon: <Search size={20} /> },
     { name: 'Thống Kê', path: '/thong-ke', icon: <PieChart size={20} /> },
   ];
 
@@ -51,7 +53,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
         
-        <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
+        <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto flex flex-col">
           {navItems.map((item) => (
             <NavLink
               key={item.path}
@@ -74,6 +76,31 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               <span className="text-sm">{item.name}</span>
             </NavLink>
           ))}
+
+          {/* Spacer để đẩy mục Cài đặt xuống dưới */}
+          <div className="flex-1"></div>
+
+          {/* Mục Cài đặt Máy in */}
+          <div className="pt-4 border-t border-gray-100 mt-2">
+            <NavLink
+                to="/settings"
+                onClick={() => {
+                    if (window.innerWidth < 1024) onClose();
+                }}
+                className={({ isActive }) =>
+                  `flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 group ${
+                    isActive
+                      ? 'bg-gray-100 text-gray-900 font-semibold'
+                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                  }`
+                }
+              >
+                <span className="mr-3 text-gray-400 group-hover:text-gray-600">
+                    <Settings size={20} />
+                </span>
+                <span className="text-sm">Cấu hình Máy in</span>
+              </NavLink>
+          </div>
         </nav>
 
         <div className="p-4 border-t border-gray-100 bg-gray-50/50 shrink-0">
